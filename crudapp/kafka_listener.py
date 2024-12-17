@@ -1,4 +1,4 @@
-from confluent_kafka import Consumer, KafkaException, KafkaError
+from confluent_kafka import Consumer
 from django.db import IntegrityError
 from .models.user import User
 import json
@@ -20,17 +20,12 @@ def consume_and_save():
     """
     try:
         # Poll for a message
-        msg = consumer.poll(1.0)  # Timeout after 1 second
+        msg = consumer.poll(1.0)
 
         if msg is None:
             print("No new messages found.")
             return
 
-        if msg.error():
-            if msg.error().code() == KafkaError._PARTITION_EOF:
-                print(f"End of partition reached: {msg.partition()}/{msg.offset()}")
-            else:
-                raise KafkaException(msg.error())
         else:
             # Process the message
             print(f"Received message: {msg.value().decode('utf-8')}")
@@ -42,7 +37,7 @@ def consume_and_save():
     except Exception as e:
         print(f"Error consuming message: {e}")
     finally:
-        consumer.close()  # Close the consumer
+        consumer.close()
 
 
 def save_to_db(data):
@@ -60,6 +55,5 @@ def save_to_db(data):
         print(f"Error saving to database: {e}")
 
 
-# Example usage
 if __name__ == '__main__':
     consume_and_save()
