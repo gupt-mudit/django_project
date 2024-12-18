@@ -48,9 +48,7 @@ def consume_and_save():
 
 
 def check_user_below_18(data):
-    """
-    Save parsed data to the database using the User model.
-    """
+
     try:
          if data['age'] < 18:
              print(f"User: {data['name']} age is below 18")
