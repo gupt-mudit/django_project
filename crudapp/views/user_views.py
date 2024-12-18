@@ -38,25 +38,17 @@ def user_view(request):
         if not all([data.get('name'), data.get('age'), data.get('email')]):
             return JsonResponse({'error': 'Missing required fields'}, status=400)
 
-        # Create the user in the database
-        user = User.objects.create(
-            name=data['name'],
-            age=data['age'],
-            email=data['email']
-        )
-
-        # Send the user data to Kafka
-        producer.produce(KAFKA_TOPIC, key=str(user.id), value=json.dumps({
-            'id': user.id,
-            'name': user.name,
-            'age': user.age,
-            'email': user.email,
+        User.objects.create(name=data.get('name'), age=data.get('age'), email=data.get('email'))
+        producer.produce(KAFKA_TOPIC, key=data['email'], value=json.dumps({
+            'name': data['name'],
+            'age': data['age'],
+            'email': data['email'],
         }), callback=delivery_report)
 
         # Ensure that messages are delivered
         producer.flush()
 
-        return JsonResponse({'message': f"pushed to kafka for user with name {user.name}"}, status=201)
+        return JsonResponse({'message': f"User Registered and pushed to kafka for user : {data['name']}"}, status=201)
 
     elif request.method == 'PUT':
         # Handle PUT request (Update an existing user)
